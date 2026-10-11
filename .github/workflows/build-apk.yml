@@ -27,30 +27,20 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          packages: platform-tools platforms;android-35 build-tools;35.0.0
 
       - name: Accept Android SDK licenses
-        run: yes | sdkmanager --licenses || true
+        run: yes | sdkmanager --licenses
+
+      - name: Install Android SDK packages
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-
-      - name: Make Gradle executable
-        run: chmod +x ./gradlew
-        if: ${{ hashFiles('gradlew') != '' }}
+        with:
+          gradle-version: '8.9'
 
       - name: Build debug APK
-        run: |
-          if [ -f "./gradlew" ]; then
-            ./gradlew assembleDebug --stacktrace
-          elif [ -f "gradlew.bat" ]; then
-            echo "Only the Windows Gradle wrapper was found. Add a Linux gradlew wrapper to build on GitHub Actions."
-            exit 1
-          else
-            echo "Gradle wrapper not found. Add gradlew and the gradle/wrapper files to the repository."
-            exit 1
-          fi
+        run: gradle --no-daemon assembleDebug --stacktrace
 
       - name: Upload APK
         if: success()
